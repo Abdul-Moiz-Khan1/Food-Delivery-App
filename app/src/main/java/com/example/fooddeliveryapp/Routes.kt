@@ -8,5 +8,6 @@ object Routes {
     val NOTIFICATION = "notification"
     val MAINBOTTOMNAV = "mainwithbottomnav"
     val MAIN = "main"
+    val DETAILS = "details"
 
 }

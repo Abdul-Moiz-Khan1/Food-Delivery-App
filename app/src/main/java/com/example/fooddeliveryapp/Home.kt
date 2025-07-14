@@ -1,11 +1,14 @@
 package com.example.fooddeliveryapp
 
 import android.app.Activity
+import android.net.Uri
 import android.os.Build
 import android.widget.EditText
 import androidx.annotation.RequiresApi
+import androidx.annotation.StringRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -59,13 +62,48 @@ import com.example.fooddeliveryapp.ui.theme.appPink
 import com.example.fooddeliveryapp.ui.theme.btn_back_color
 import com.example.fooddeliveryapp.ui.theme.gradient_top
 import androidx.core.graphics.toColorInt
+import com.example.fooddeliveryapp.ui.theme.filter_back_color
 import com.example.fooddeliveryapp.ui.theme.softPink
+import com.google.gson.Gson
+
+val foodlist = mutableListOf<foodItem>(
+    foodItem("Hyderabadi Biryani", R.drawable.biryani, 4, "3.5", "42", "biryani","10" , 250 , "2.5" ,
+        R.string.description.toString()
+    ),
+    foodItem("New Yorker Pizza", R.drawable.pizza, 3, "5", "42", "pizza","12" , 410 , "3.5" ,
+        R.string.description.toString()),
+    foodItem("Beef Burger", R.drawable.burger, 4, "4.5", "44", "burger","21" , 2150 , "5.5" ,
+        R.string.description.toString()),
+    foodItem("Bombay Biryani", R.drawable.biryani, 5, "4.5", "36", "biryani","15" , 550 , "4.5" ,
+        R.string.description.toString()),
+    foodItem("Crown Crust Pizza", R.drawable.pizza, 3, "3.5", "12", "pizza","17" , 550 , "7.5" ,
+        R.string.description.toString()),
+    foodItem("Mighty Burger", R.drawable.burger, 3, "3", "21", "burger","21" , 2150 , "2.6" ,
+        R.string.description.toString()),
+    foodItem("Karachi Biryani", R.drawable.biryani, 4, "6.5", "31", "biryani","15" , 650 , "7.5" ,
+        R.string.description.toString()),
+    foodItem("Mushroom Pizza", R.drawable.pizza, 3, "4.3", "23", "pizza","19" , 650 , "5.1" ,
+        R.string.description.toString()),
+    foodItem("Ranchers Burger", R.drawable.burger, 5, "3.2", "12", "burger","15" , 750 , "4.3" ,
+        R.string.description.toString()),
+    foodItem("Sindhi Biryani", R.drawable.biryani, 4, "3", "20", "biryani","21" , 2150 , "4.5" ,
+        R.string.description.toString()),
+    foodItem("Italian Pizza", R.drawable.pizza, 3, "4.5", "12", "pizza","16" , 123 , "4.5" ,
+        R.string.description.toString()),
+    foodItem("Lahori Biryani", R.drawable.biryani, 4, "4.7", "40", "biryani","14" , 750 , "6.5" ,
+        R.string.description.toString()),
+    foodItem("Kfc Burger", R.drawable.burger, 4, "4.2", "41", "burger","5" , 20 , "2.5" ,
+        R.string.description.toString()),
+)
 
 @Composable
 fun Home(
+    navController: NavController
 
 ) {
+
     var search by remember { mutableStateOf("") }
+    var filteredFoodList by remember { mutableStateOf(foodlist) }
 
     Column(
         modifier = Modifier
@@ -190,7 +228,10 @@ fun Home(
             }
 
         }
-        filterList()
+        filterList { selectedCategory ->
+            filteredFoodList =
+                foodlist.filter { it.category == selectedCategory.lowercase() }.toMutableList()
+        }
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -201,14 +242,19 @@ fun Home(
             Text("See all", fontSize = 12.sp, modifier = Modifier)
         }
 
-        foodItemsList()
+        foodItemsList(filteredFoodList, navController)
 
     }
 
 }
 
 @Composable
-fun customFilterItem(item: filterItem) {
+fun customFilterItem(
+    item: filterItem,
+    isSelected: Boolean,
+    onClick: (String) -> Unit
+) {
+    val backgroundColor = if (isSelected) filter_back_color else Color.Gray.copy(alpha = 0.4f)
 
     Row(
         modifier = Modifier
@@ -216,7 +262,8 @@ fun customFilterItem(item: filterItem) {
             .fillMaxHeight(.2f)
             .padding(16.dp)
             .clip(CircleShape)
-            .background(Color.Gray.copy(.4f))
+            .background(backgroundColor)
+            .clickable { onClick(item.name) }
             .padding(4.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
@@ -251,8 +298,8 @@ fun customFilterItem(item: filterItem) {
 }
 
 @Composable
-fun filterList() {
-    val list = listOf(
+fun filterList(onFilterSelected: (String) -> Unit) {
+    val list = mutableListOf<filterItem>(
         filterItem("Biryani", R.drawable.biryani),
         filterItem("Pizza", R.drawable.pizza),
         filterItem("Burger", R.drawable.burger),
@@ -279,24 +326,39 @@ fun filterList() {
         filterItem("Pizza", R.drawable.pizza),
         filterItem("Burger", R.drawable.burger),
     )
+
+    var selectedItem by remember { mutableStateOf<filterItem?>(null) }
     LazyRow(
     ) {
         items(list) { item ->
-            customFilterItem(item)
+            customFilterItem(
+                item,
+                isSelected = item == selectedItem,
+                onClick = { filter ->
+                    selectedItem = item
+                    onFilterSelected(filter)
+                })
         }
 
     }
 }
 
 @Composable
-fun customFoodItems(item: foodItem) {
+fun customFoodItems(item: foodItem, navController: NavController) {
+
     Column(
         modifier = Modifier
             .padding(24.dp)
             .fillMaxHeight(1F)
-            .wrapContentWidth()
+            .fillMaxWidth()
             .clip(RoundedCornerShape(30.dp))
             .background(softPink)
+            .clickable {
+
+                val itemJson = Uri.encode(Gson().toJson(item))
+                naviagate(navController , itemJson)
+
+            }
     ) {
         Image(
             painter = painterResource(item.image),
@@ -305,13 +367,38 @@ fun customFoodItems(item: foodItem) {
                 .padding(6.dp)
                 .fillMaxWidth(.5f)
                 .fillMaxHeight(.6f)
+                .background(Color.Transparent)
 
         )
         Text(item.name, modifier = Modifier.padding(4.dp), fontSize = 14.sp)
-        Row(modifier = Modifier.padding(4.dp), horizontalArrangement = Arrangement.spacedBy(32.dp)) {
-            Text("${item.distance}km", modifier = Modifier.padding(2.dp), fontSize = 14.sp)
-            Text("${item.deliveryTime} min", modifier = Modifier.padding(2.dp), fontSize = 14.sp)
-
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start) {
+            repeat(item.stars) {
+                Image(
+                    painter = painterResource(R.drawable.star),
+                    contentDescription = "star",
+                    modifier = Modifier.padding(1.dp)
+                )
+            }
+        }
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 8.dp, vertical = 4.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                "${item.distance}km",
+                fontSize = 14.sp
+            )
+            Image(
+                painter = painterResource(R.drawable.dot),
+                contentDescription = "",
+                modifier = Modifier.wrapContentHeight().align(Alignment.CenterVertically)
+            )
+            Text(
+                "${item.deliveryTime}min",
+                fontSize = 14.sp,
+            )
         }
 
 
@@ -319,43 +406,29 @@ fun customFoodItems(item: foodItem) {
 
 }
 
-@Composable
-fun foodItemsList(modifier: Modifier = Modifier) {
+fun naviagate(navController: NavController , item: String) {
 
-    val list = listOf(
-        foodItem("Hyderabadi Biryani", R.drawable.biryani, 4, "3.5", "42"),
-        foodItem("New Yorker Pizza", R.drawable.pizza, 3, "5", "42"),
-        foodItem("Beef Burger", R.drawable.burger, 4, "4.5", "44"),
-        foodItem("Bombay Biryani", R.drawable.biryani, 5, "4.5", "36"),
-        foodItem("Crown Crust Pizza", R.drawable.pizza, 3, "3.5", "12"),
-        foodItem("Mighty Burger", R.drawable.burger, 3, "3", "21"),
-        foodItem("Karachi Biryani", R.drawable.biryani, 4, "6.5", "31"),
-        foodItem("Mushroom Pizza", R.drawable.pizza, 3, "4.3", "23"),
-        foodItem("Ranchers Burger", R.drawable.burger, 5, "3.2", "12"),
-        foodItem("Sindhi Biryani", R.drawable.biryani, 4, "3", "20"),
-        foodItem("Italian Pizza", R.drawable.pizza, 3, "4.5", "12"),
-        foodItem("Lahori Biryani", R.drawable.biryani, 4, "4.7", "40"),
-        foodItem("Kfc Burger", R.drawable.burger, 4, "4.2", "41"),
-        foodItem("California Pizza", R.drawable.pizza, 4, "3.4", "31"),
-        foodItem("King's Burger", R.drawable.burger, 5, "5", "39"),
-    )
+    navController.navigate("details/$item") {
+        popUpTo(Routes.HOME) { inclusive = true }
+    }
+
+}
+
+@Composable
+fun foodItemsList(list: MutableList<foodItem>, navController: NavController) {
 
     LazyRow(
-        modifier = modifier
+        modifier = Modifier
             .fillMaxWidth()
             .padding(start = 16.dp, end = 16.dp),
         contentPadding = PaddingValues(horizontal = 16.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         items(list) { item ->
-            customFoodItems(item)
+            customFoodItems(item, navController)
         }
     }
 
 }
 
-//@Preview(showBackground = true)
-//@Composable
-//fun previewView(modifier: Modifier = Modifier) {
-//    Home()
-//}
+
