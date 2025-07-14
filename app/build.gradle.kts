@@ -61,4 +61,5 @@ dependencies {
 
     implementation("androidx.navigation:navigation-compose:$nav_version")
     implementation("com.google.code.gson:gson:2.13.1")
+    implementation("com.google.accompanist:accompanist-systemuicontroller:0.27.0")
 }

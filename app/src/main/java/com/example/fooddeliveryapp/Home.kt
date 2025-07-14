@@ -67,33 +67,58 @@ import com.example.fooddeliveryapp.ui.theme.softPink
 import com.google.gson.Gson
 
 val foodlist = mutableListOf<foodItem>(
-    foodItem("Hyderabadi Biryani", R.drawable.biryani, 4, "3.5", "42", "biryani","10" , 250 , "2.5" ,
+    foodItem(
+        "Hyderabadi Biryani", R.drawable.biryani, 4, "3.5", "42", "biryani", "10", 250, "2.5",
         R.string.description.toString()
     ),
-    foodItem("New Yorker Pizza", R.drawable.pizza, 3, "5", "42", "pizza","12" , 410 , "3.5" ,
-        R.string.description.toString()),
-    foodItem("Beef Burger", R.drawable.burger, 4, "4.5", "44", "burger","21" , 2150 , "5.5" ,
-        R.string.description.toString()),
-    foodItem("Bombay Biryani", R.drawable.biryani, 5, "4.5", "36", "biryani","15" , 550 , "4.5" ,
-        R.string.description.toString()),
-    foodItem("Crown Crust Pizza", R.drawable.pizza, 3, "3.5", "12", "pizza","17" , 550 , "7.5" ,
-        R.string.description.toString()),
-    foodItem("Mighty Burger", R.drawable.burger, 3, "3", "21", "burger","21" , 2150 , "2.6" ,
-        R.string.description.toString()),
-    foodItem("Karachi Biryani", R.drawable.biryani, 4, "6.5", "31", "biryani","15" , 650 , "7.5" ,
-        R.string.description.toString()),
-    foodItem("Mushroom Pizza", R.drawable.pizza, 3, "4.3", "23", "pizza","19" , 650 , "5.1" ,
-        R.string.description.toString()),
-    foodItem("Ranchers Burger", R.drawable.burger, 5, "3.2", "12", "burger","15" , 750 , "4.3" ,
-        R.string.description.toString()),
-    foodItem("Sindhi Biryani", R.drawable.biryani, 4, "3", "20", "biryani","21" , 2150 , "4.5" ,
-        R.string.description.toString()),
-    foodItem("Italian Pizza", R.drawable.pizza, 3, "4.5", "12", "pizza","16" , 123 , "4.5" ,
-        R.string.description.toString()),
-    foodItem("Lahori Biryani", R.drawable.biryani, 4, "4.7", "40", "biryani","14" , 750 , "6.5" ,
-        R.string.description.toString()),
-    foodItem("Kfc Burger", R.drawable.burger, 4, "4.2", "41", "burger","5" , 20 , "2.5" ,
-        R.string.description.toString()),
+    foodItem(
+        "New Yorker Pizza", R.drawable.pizza, 3, "5", "42", "pizza", "12", 410, "3.5",
+        R.string.description.toString()
+    ),
+    foodItem(
+        "Beef Burger", R.drawable.burger, 4, "4.5", "44", "burger", "21", 2150, "5.5",
+        R.string.description.toString()
+    ),
+    foodItem(
+        "Bombay Biryani", R.drawable.biryani, 5, "4.5", "36", "biryani", "15", 550, "4.5",
+        R.string.description.toString()
+    ),
+    foodItem(
+        "Crown Crust Pizza", R.drawable.pizza, 3, "3.5", "12", "pizza", "17", 550, "7.5",
+        R.string.description.toString()
+    ),
+    foodItem(
+        "Mighty Burger", R.drawable.burger, 3, "3", "21", "burger", "21", 2150, "2.6",
+        R.string.description.toString()
+    ),
+    foodItem(
+        "Karachi Biryani", R.drawable.biryani, 4, "6.5", "31", "biryani", "15", 650, "7.5",
+        R.string.description.toString()
+    ),
+    foodItem(
+        "Mushroom Pizza", R.drawable.pizza, 3, "4.3", "23", "pizza", "19", 650, "5.1",
+        R.string.description.toString()
+    ),
+    foodItem(
+        "Ranchers Burger", R.drawable.burger, 5, "3.2", "12", "burger", "15", 750, "4.3",
+        R.string.description.toString()
+    ),
+    foodItem(
+        "Sindhi Biryani", R.drawable.biryani, 4, "3", "20", "biryani", "21", 2150, "4.5",
+        R.string.description.toString()
+    ),
+    foodItem(
+        "Italian Pizza", R.drawable.pizza, 3, "4.5", "12", "pizza", "16", 123, "4.5",
+        R.string.description.toString()
+    ),
+    foodItem(
+        "Lahori Biryani", R.drawable.biryani, 4, "4.7", "40", "biryani", "14", 750, "6.5",
+        R.string.description.toString()
+    ),
+    foodItem(
+        "Kfc Burger", R.drawable.burger, 4, "4.2", "41", "burger", "5", 20, "2.5",
+        R.string.description.toString()
+    ),
 )
 
 @Composable
@@ -204,7 +229,9 @@ fun Home(
                 )
                 TextField(
                     value = search,
-                    onValueChange = { search = it },
+                    onValueChange = {
+                        search = it
+                    },
                     placeholder = {
                         Text("Search", textAlign = TextAlign.Start)
                     },
@@ -356,7 +383,7 @@ fun customFoodItems(item: foodItem, navController: NavController) {
             .clickable {
 
                 val itemJson = Uri.encode(Gson().toJson(item))
-                naviagate(navController , itemJson)
+                naviagate(navController, itemJson)
 
             }
     ) {
@@ -393,7 +420,9 @@ fun customFoodItems(item: foodItem, navController: NavController) {
             Image(
                 painter = painterResource(R.drawable.dot),
                 contentDescription = "",
-                modifier = Modifier.wrapContentHeight().align(Alignment.CenterVertically)
+                modifier = Modifier
+                    .wrapContentHeight()
+                    .align(Alignment.CenterVertically)
             )
             Text(
                 "${item.deliveryTime}min",
@@ -406,10 +435,9 @@ fun customFoodItems(item: foodItem, navController: NavController) {
 
 }
 
-fun naviagate(navController: NavController , item: String) {
+fun naviagate(navController: NavController, item: String) {
 
     navController.navigate("details/$item") {
-        popUpTo(Routes.HOME) { inclusive = true }
     }
 
 }

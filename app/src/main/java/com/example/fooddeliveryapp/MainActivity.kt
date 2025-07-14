@@ -18,9 +18,14 @@ import androidx.navigation.compose.rememberNavController
 import com.example.fooddeliveryapp.ui.theme.FoodDeliveryAppTheme
 import com.example.fooddeliveryapp.ui.theme.gradient_top
 import androidx.core.graphics.toColorInt
+import androidx.core.view.WindowCompat
 
 class MainActivity : ComponentActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
+
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        window.statusBarColor = Color.TRANSPARENT
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {

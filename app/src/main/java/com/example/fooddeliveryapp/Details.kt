@@ -1,9 +1,12 @@
 package com.example.fooddeliveryapp
 
+import android.app.Activity
 import android.util.EventLogTags
+import android.widget.ScrollView
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,6 +23,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -29,13 +33,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.navigation.NavController
 import com.example.fooddeliveryapp.ui.theme.appPink
 import com.example.fooddeliveryapp.ui.theme.filter_back_color
@@ -44,7 +52,19 @@ import com.example.fooddeliveryapp.ui.theme.softPink
 
 @Composable
 fun Details(navController: NavController, item: foodItem) {
+    val view = LocalView.current
+    val window = (view.context as Activity).window
+
+    SideEffect {
+        window.statusBarColor = Color(0xFFFF4081).toArgb()
+        WindowInsetsControllerCompat(window, view).isAppearanceLightStatusBars = false
+    }
+
     var number by remember { mutableStateOf(1) }
+    var selectedSize by remember { mutableStateOf("Small") }
+    var price by remember { mutableStateOf(item.price) }
+    var calories by remember { mutableStateOf(item.calories) }
+    var diameter by remember { mutableStateOf(item.diameter) }
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -68,10 +88,13 @@ fun Details(navController: NavController, item: foodItem) {
             Image(
                 painter = painterResource(R.drawable.back), modifier = Modifier
                     .background(
-                        Color.White,
+                        softPink,
                         CircleShape
                     )
-                    .padding(16.dp), contentDescription = null
+                    .padding(16.dp)
+                    .clickable {
+                        navController.popBackStack()
+                    }, contentDescription = null
             )
             Text(
                 text = "Details",
@@ -81,7 +104,7 @@ fun Details(navController: NavController, item: foodItem) {
             Image(
                 painter = painterResource(R.drawable.fav), modifier = Modifier
                     .background(
-                        Color.White,
+                        softPink,
                         CircleShape
                     )
                     .padding(16.dp), contentDescription = null
@@ -112,11 +135,11 @@ fun Details(navController: NavController, item: foodItem) {
                 .padding(16.dp)
         ) {
             Column(modifier = Modifier.fillMaxWidth(.4f)) {
-                Description("Price", "$${item.price}")
+                Description("Price", "$${price}")
                 Spacer(modifier = Modifier.padding(8.dp))
-                Description("Calories", "${item.calories} Cal")
+                Description("Calories", "$calories Cal")
                 Spacer(modifier = Modifier.padding(8.dp))
-                Description("Diameter", "${item.diameter} cm")
+                Description("Diameter", "$diameter cm")
                 Spacer(modifier = Modifier.padding(8.dp))
                 Row() {
                     Image(
@@ -159,20 +182,43 @@ fun Details(navController: NavController, item: foodItem) {
                 )
             }
         }
-        Row (modifier = Modifier.fillMaxWidth(),){
-            RoundButton("Small")
-            RoundButton("Medium")
-            RoundButton("Large")
+        Row(modifier = Modifier.fillMaxWidth()) {
+            Row(modifier = Modifier.fillMaxWidth()) {
+                listOf("Small", "Medium", "Large").forEach { size ->
+                    RoundButton(
+                        size = size,
+                        isSelected = selectedSize == size,
+                        onClick = { selectedSize = size
+                        if(size == "Small"){
+                            price = item.price
+                            calories = item.calories
+                            diameter = item.diameter
+                        }
+                        else if(size == "Medium"){
+                            price = (item.price.toInt() + 10).toString()
+                            calories = calories + 400
+                            diameter = (item.diameter.toDouble() + 2).toString()
+                        }else{
+                            price = (item.price.toInt() + 20).toString()
+                            calories = calories + 800
+                            diameter = (item.diameter.toDouble() + 4).toString()
+                        }
+                        }
+                    )
+                }
+            }
         }
         Text(
-            text = R.string.description.toString(),
-            fontSize = 20.sp,
-            fontWeight = FontWeight.SemiBold,
-            modifier = Modifier.padding(start = 16.dp))
+            text = stringResource(id = R.string.description),
+            fontSize = 16.sp,
+            modifier = Modifier.padding(start = 16.dp)
+        )
+        Spacer(modifier = Modifier.weight(1f))
         Button(
             modifier = Modifier
+                .align(Alignment.End)
                 .fillMaxWidth()
-                .fillMaxHeight(0.3f),
+                .wrapContentHeight(),
             colors = ButtonDefaults.buttonColors(
                 containerColor = appPink,
 
@@ -202,10 +248,22 @@ fun Description(name: String, value: String) {
 }
 
 @Composable
-fun RoundButton(size: String) {
-    Box(Modifier.padding(8.dp).background(filter_back_color, RoundedCornerShape(30.dp)).padding(start = 8.dp , end = 8.dp)) {
-        Text(size, fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(8.dp))
+fun RoundButton(size: String, isSelected: Boolean, onClick: () -> Unit) {
+    val backgroundColor = if (isSelected) appPink else filter_back_color
 
+    Box(
+        modifier = Modifier
+            .padding(8.dp)
+            .background(backgroundColor, RoundedCornerShape(30.dp))
+            .clickable { onClick() }
+            .padding(start = 12.dp, end = 12.dp)
+    ) {
+        Text(
+            size,
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.padding(8.dp),
+            color = Color.White
+        )
     }
 }
 
